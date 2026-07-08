@@ -1,3 +1,8 @@
 from django.contrib import admin
+from .models import Favorite
 
-# Register your models here.
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ('user', 'listing', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('user__email', 'listing__brand__name')

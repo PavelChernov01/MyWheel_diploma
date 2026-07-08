@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'guardian',
     'django_celery_beat',
-    'debug_toolbar',
+    # 'debug_toolbar',
 
     # Наши приложения
     'core.apps.CoreConfig',
@@ -59,7 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'audit.middleware.AuditMiddleware',  # Наш middleware для аудита
 ]
 
