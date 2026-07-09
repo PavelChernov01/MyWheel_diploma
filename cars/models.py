@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from django.contrib.postgres.search import SearchVectorField
 from core.models import BaseModel
 from brands.models import Brand, Model, BodyType, EngineType, TransmissionType, DriveType
 
@@ -81,8 +80,6 @@ class CarListing(BaseModel):
     views_count = models.PositiveIntegerField(default=0, verbose_name='Количество просмотров')
     favorites_count = models.PositiveIntegerField(default=0, verbose_name='В избранном')
 
-    search_vector = SearchVectorField(null=True, blank=True, verbose_name='Поисковый вектор')
-
     class Meta:
         verbose_name = 'Объявление'
         verbose_name_plural = 'Объявления'
@@ -91,7 +88,6 @@ class CarListing(BaseModel):
             models.Index(fields=['status', '-created_at']),
             models.Index(fields=['brand', 'model']),
             models.Index(fields=['price']),
-            models.Index(fields=['search_vector']),
         ]
 
     def __str__(self):

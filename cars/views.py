@@ -1,3 +1,64 @@
-from django.shortcuts import render
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
-# Create your views here.
+from .models import CarListing
+from .serializers import (
+    CarListingSerializer, CarListingDetailSerializer,
+    CarListingCreateSerializer
+)
+from .filters import CarListingFilter
+
+
+class CarListingListView(generics.ListAPIView):
+    """Список объявлений с фильтрацией и поиском"""
+    serializer_class = CarListingSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = CarListingFilter
+    search_fields = ['description', 'brand__name', 'model__name', 'city']
+    ordering_fields = ['price', 'year', 'created_at', 'views_count']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        return CarListing.objects.filter(status='active').select_related('brand', 'model', 'user')
+
+
+class CarListingDetailView(generics.RetrieveAPIView):
+    """Детальный просмотр объявления"""
+    serializer_class = CarListingDetailSerializer
+    queryset = CarListing.objects.filter(status='active')
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.views_count += 1
+        instance.save(update_fields=['views_count'])
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class CarListingCreateView(generics.CreateAPIView):
+    """Создание объявления"""
+    serializer_class = CarListingCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class CarListingUpdateView(generics.UpdateAPIView):
+    """Обновление объявления"""
+    serializer_class = CarListingCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return CarListing.objects.filter(user=self.request.user)
+
+
+class CarListingDeleteView(generics.DestroyAPIView):
+    """Удаление объявления"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return CarListing.objects.filter(user=self.request.user)
