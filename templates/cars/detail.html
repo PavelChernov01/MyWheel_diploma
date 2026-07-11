@@ -1,0 +1,76 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ car.brand.name }} {{ car.model.name }} - {{ car.year }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
+            <li class="breadcrumb-item active">{{ car.brand.name }} {{ car.model.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-6">
+            {% if car.images.first %}
+                <img src="{{ car.images.first.image.url }}" class="img-fluid rounded" alt="{{ car.brand.name }} {{ car.model.name }}">
+            {% else %}
+                <div class="bg-secondary d-flex align-items-center justify-content-center rounded" style="height: 400px;">
+                    <i class="fas fa-car fa-5x text-white"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h2>{{ car.brand.name }} {{ car.model.name }}</h2>
+            <p class="text-muted">{{ car.year }} год</p>
+            <h3 class="text-primary">{{ car.price|floatformat:0 }} ₽</h3>
+            
+            <hr>
+            
+            <p><i class="fas fa-road"></i> Пробег: {{ car.mileage|floatformat:0 }} км</p>
+            <p><i class="fas fa-map-marker-alt"></i> Город: {{ car.city }}</p>
+            
+            {% if car.engine_volume %}
+                <p><i class="fas fa-gas-pump"></i> Объём двигателя: {{ car.engine_volume }} л</p>
+            {% endif %}
+            
+            {% if car.horsepower %}
+                <p><i class="fas fa-gauge-high"></i> Мощность: {{ car.horsepower }} л.с.</p>
+            {% endif %}
+            
+            {% if car.transmission %}
+                <p><i class="fas fa-cog"></i> Коробка передач: {{ car.transmission.name }}</p>
+            {% endif %}
+            
+            {% if car.drive_type %}
+                <p><i class="fas fa-car-side"></i> Привод: {{ car.drive_type.name }}</p>
+            {% endif %}
+            
+            {% if car.color %}
+                <p><i class="fas fa-palette"></i> Цвет: {{ car.color }}</p>
+            {% endif %}
+            
+            <hr>
+            
+            <h5>Описание</h5>
+            <p class="text-muted">{{ car.description }}</p>
+            
+            <hr>
+            
+            <div class="d-flex gap-2">
+                <span class="badge bg-secondary">👁️ {{ car.views_count }}</span>
+                <span class="badge bg-danger">❤️ {{ car.favorites_count }}</span>
+            </div>
+            
+            {% if user.is_authenticated and car.user == user %}
+                <hr>
+                <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-primary">Редактировать</a>
+                    <a href="#" class="btn btn-danger">Удалить</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

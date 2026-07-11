@@ -11,6 +11,12 @@ from .serializers import (
 )
 from .filters import CarListingFilter
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
+
+# ============ API Views ============
 
 class CarListingListView(generics.ListAPIView):
     """Список объявлений с фильтрацией и поиском"""
@@ -62,3 +68,25 @@ class CarListingDeleteView(generics.DestroyAPIView):
 
     def get_queryset(self):
         return CarListing.objects.filter(user=self.request.user)
+
+
+# ============ HTML Views (фронтенд) ============
+
+def car_list(request):
+    """Главная страница со списком объявлений"""
+    cars = CarListing.objects.filter(status='active').order_by('-created_at')
+    return render(request, 'cars/list.html', {'cars': cars})
+
+
+def car_detail(request, pk):
+    """Детальная страница объявления"""
+    car = get_object_or_404(CarListing, pk=pk, status='active')
+    car.views_count += 1
+    car.save(update_fields=['views_count'])
+    return render(request, 'cars/detail.html', {'car': car})
+
+
+@login_required
+def car_create(request):
+    """Создание объявления"""
+    return render(request, 'cars/create.html')
