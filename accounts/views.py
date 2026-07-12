@@ -2,14 +2,20 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout, authenticate
+from django.contrib import messages
 
 from .serializers import (
     RegisterSerializer, LoginSerializer,
     UserProfileSerializer, UserProfileUpdateSerializer
 )
+from .forms import LoginForm, RegisterForm
 
 User = get_user_model()
 
+
+# ============ API Views ============
 
 class RegisterView(generics.CreateAPIView):
     """Регистрация нового пользователя"""
@@ -86,3 +92,55 @@ class LogoutView(APIView):
             return Response({'message': 'Успешный выход'}, status=status.HTTP_205_RESET_CONTENT)
         except Exception:
             return Response({'message': 'Ошибка при выходе'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ============ HTML Views (фронтенд) ============
+
+def login_view(request):
+    """Страница входа"""
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            # Явно указываем бэкенд
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            messages.success(request, f'Добро пожаловать, {user.first_name or user.username}!')
+            next_url = request.GET.get('next', 'home')
+            return redirect(next_url)
+        else:
+            messages.error(request, 'Неверное имя пользователя или пароль')
+    else:
+        form = LoginForm()
+
+    return render(request, 'accounts/login.html', {'form': form})
+
+
+def logout_view(request):
+    """Выход из системы"""
+    logout(request)
+    messages.info(request, 'Вы вышли из системы')
+    return redirect('home')
+
+
+def register_view(request):
+    """Страница регистрации"""
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Явно указываем бэкенд
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            messages.success(request, f'Регистрация прошла успешно! Добро пожаловать, {user.first_name or user.username}!')
+            return redirect('home')
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме')
+    else:
+        form = RegisterForm()
+
+    return render(request, 'accounts/register.html', {'form': form})
