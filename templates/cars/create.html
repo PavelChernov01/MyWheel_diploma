@@ -6,10 +6,101 @@
 <div class="container py-4">
     <h1 class="mb-4">➕ Создать объявление</h1>
     
-    <div class="card">
-        <div class="card-body">
-            <p class="text-muted">Форма создания объявления будет здесь</p>
-            <p class="text-muted">Пока это заглушка. Форма будет добавлена позже.</p>
+    <div class="card shadow">
+        <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Основная информация -->
+                <h5 class="mb-3">Основная информация</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Марка</label>
+                        {{ form.brand }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Модель</label>
+                        {{ form.model }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Год выпуска</label>
+                        {{ form.year }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Цена (₽)</label>
+                        {{ form.price }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Пробег (км)</label>
+                        {{ form.mileage }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Город</label>
+                        {{ form.city }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Цвет</label>
+                        {{ form.color }}
+                    </div>
+                </div>
+
+                <!-- Технические характеристики -->
+                <h5 class="mb-3 mt-4">Технические характеристики</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Тип кузова</label>
+                        {{ form.body_type }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Тип двигателя</label>
+                        {{ form.engine_type }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Коробка передач</label>
+                        {{ form.transmission }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Тип привода</label>
+                        {{ form.drive_type }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Объём двигателя (л)</label>
+                        {{ form.engine_volume }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Мощность (л.с.)</label>
+                        {{ form.horsepower }}
+                    </div>
+                </div>
+
+                <!-- Описание -->
+                <h5 class="mb-3 mt-4">Описание</h5>
+                <div class="mb-3">
+                    <label class="form-label">Подробное описание</label>
+                    {{ form.description }}
+                </div>
+
+                <!-- Фотографии -->
+                <h5 class="mb-3 mt-4">📷 Фотографии</h5>
+                <div class="mb-3">
+                    <label class="form-label">Выберите фотографии (можно несколько)</label>
+                    {{ image_form.images }}
+                    <small class="text-muted">Поддерживаются форматы: JPG, PNG, WEBP</small>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 mt-3">
+                    <i class="fas fa-plus-circle"></i> Опубликовать объявление
+                </button>
+            </form>
         </div>
     </div>
 </div>

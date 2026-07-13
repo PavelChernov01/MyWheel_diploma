@@ -3,17 +3,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db import transaction
 
-from .models import CarListing
+from .models import CarListing, CarImage
 from .serializers import (
     CarListingSerializer, CarListingDetailSerializer,
     CarListingCreateSerializer
 )
 from .filters import CarListingFilter
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+from .forms import CarListingForm, MultipleCarImageForm
 
 
 # ============ API Views ============
@@ -89,4 +90,36 @@ def car_detail(request, pk):
 @login_required
 def car_create(request):
     """Создание объявления"""
-    return render(request, 'cars/create.html')
+    if request.method == 'POST':
+        form = CarListingForm(request.POST)
+        image_form = MultipleCarImageForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            with transaction.atomic():
+                car = form.save(commit=False)
+                car.user = request.user
+                car.status = 'moderation'
+                car.save()
+
+                # Обработка изображений
+                images = request.FILES.getlist('images')
+                for i, image in enumerate(images):
+                    CarImage.objects.create(
+                        listing=car,
+                        image=image,
+                        is_main=(i == 0),
+                        order=i
+                    )
+
+            messages.success(request, 'Объявление создано и отправлено на модерацию!')
+            return redirect('car_detail', pk=car.pk)
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме')
+    else:
+        form = CarListingForm()
+        image_form = MultipleCarImageForm()
+
+    return render(request, 'cars/create.html', {
+        'form': form,
+        'image_form': image_form,
+    })
