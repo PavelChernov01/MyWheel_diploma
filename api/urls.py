@@ -10,6 +10,7 @@ from cars.views import (
     CarListingCreateView, CarListingUpdateView,
     CarListingDeleteView
 )
+from favorites.views import FavoriteListCreateView, FavoriteDeleteView
 
 app_name = 'api'
 
@@ -28,4 +29,8 @@ urlpatterns = [
     path('cars/<int:pk>/', CarListingDetailView.as_view(), name='cars_detail'),
     path('cars/<int:pk>/update/', CarListingUpdateView.as_view(), name='cars_update'),
     path('cars/<int:pk>/delete/', CarListingDeleteView.as_view(), name='cars_delete'),
+
+    # Избранное
+    path('favorites/', FavoriteListCreateView.as_view(), name='favorites_list'),
+    path('favorites/<int:pk>/', FavoriteDeleteView.as_view(), name='favorites_delete'),
 ]

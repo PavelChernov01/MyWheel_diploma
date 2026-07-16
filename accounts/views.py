@@ -5,12 +5,14 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 from .serializers import (
     RegisterSerializer, LoginSerializer,
     UserProfileSerializer, UserProfileUpdateSerializer
 )
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, RegisterForm, ProfileForm
+from cars.models import CarListing
 
 User = get_user_model()
 
@@ -105,7 +107,6 @@ def login_view(request):
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            # Явно указываем бэкенд
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, f'Добро пожаловать, {user.first_name or user.username}!')
             next_url = request.GET.get('next', 'home')
@@ -134,9 +135,9 @@ def register_view(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Явно указываем бэкенд
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            messages.success(request, f'Регистрация прошла успешно! Добро пожаловать, {user.first_name or user.username}!')
+            messages.success(request,
+                             f'Регистрация прошла успешно! Добро пожаловать, {user.first_name or user.username}!')
             return redirect('home')
         else:
             messages.error(request, 'Пожалуйста, исправьте ошибки в форме')
@@ -144,3 +145,38 @@ def register_view(request):
         form = RegisterForm()
 
     return render(request, 'accounts/register.html', {'form': form})
+
+
+@login_required
+def profile_view(request):
+    """Страница профиля пользователя"""
+    user = request.user
+
+    # Объявления пользователя
+    user_cars = CarListing.objects.filter(user=user).order_by('-created_at')
+
+    # Статистика
+    total_listings = user_cars.count()
+    active_listings = user_cars.filter(status='active').count()
+    sold_listings = user_cars.filter(status='sold').count()
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Профиль успешно обновлён!')
+            return redirect('profile')
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме')
+    else:
+        form = ProfileForm(instance=user)
+
+    context = {
+        'user': user,
+        'form': form,
+        'user_cars': user_cars,
+        'total_listings': total_listings,
+        'active_listings': active_listings,
+        'sold_listings': sold_listings,
+    }
+    return render(request, 'accounts/profile.html', context)

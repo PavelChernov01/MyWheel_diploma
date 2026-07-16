@@ -69,3 +69,18 @@ class LoginForm(AuthenticationForm):
             except User.DoesNotExist:
                 pass
         return username
+
+
+class ProfileForm(forms.ModelForm):
+    """Форма редактирования профиля"""
+
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'phone', 'city', 'avatar')
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Имя'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Фамилия'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Телефон'}),
+            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Город'}),
+            'avatar': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }

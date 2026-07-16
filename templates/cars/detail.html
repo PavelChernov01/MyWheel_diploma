@@ -6,7 +6,7 @@
 <div class="container py-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Главная</a></li>
             <li class="breadcrumb-item active">{{ car.brand.name }} {{ car.model.name }}</li>
         </ol>
     </nav>
@@ -14,62 +14,98 @@
     <div class="row">
         <div class="col-md-6">
             {% if car.images.first %}
-                <img src="{{ car.images.first.image.url }}" class="img-fluid rounded" alt="{{ car.brand.name }} {{ car.model.name }}">
+                <img src="{{ car.images.first.image.url }}" class="img-fluid rounded shadow-sm" alt="{{ car.brand.name }} {{ car.model.name }}">
             {% else %}
-                <div class="bg-secondary d-flex align-items-center justify-content-center rounded" style="height: 400px;">
-                    <i class="fas fa-car fa-5x text-white"></i>
+                <div class="bg-dark d-flex align-items-center justify-content-center rounded shadow-sm" style="height: 400px;">
+                    <i class="fas fa-car fa-5x text-secondary"></i>
                 </div>
             {% endif %}
         </div>
         <div class="col-md-6">
-            <h2>{{ car.brand.name }} {{ car.model.name }}</h2>
-            <p class="text-muted">{{ car.year }} год</p>
-            <h3 class="text-primary">{{ car.price|floatformat:0 }} ₽</h3>
-            
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h2 class="fw-bold">{{ car.brand.name }} {{ car.model.name }}</h2>
+                    <p class="text-muted">{{ car.year }} год</p>
+                </div>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'favorites_add' car.id %}" class="btn btn-outline-secondary">
+                        <i class="far fa-star"></i> В избранное
+                    </a>
+                {% endif %}
+            </div>
+            <h3 class="text-success fw-bold">{{ car.price|floatformat:0 }} ₽</h3>
+
             <hr>
-            
-            <p><i class="fas fa-road"></i> Пробег: {{ car.mileage|floatformat:0 }} км</p>
-            <p><i class="fas fa-map-marker-alt"></i> Город: {{ car.city }}</p>
-            
-            {% if car.engine_volume %}
-                <p><i class="fas fa-gas-pump"></i> Объём двигателя: {{ car.engine_volume }} л</p>
-            {% endif %}
-            
-            {% if car.horsepower %}
-                <p><i class="fas fa-gauge-high"></i> Мощность: {{ car.horsepower }} л.с.</p>
-            {% endif %}
-            
-            {% if car.transmission %}
-                <p><i class="fas fa-cog"></i> Коробка передач: {{ car.transmission.name }}</p>
-            {% endif %}
-            
-            {% if car.drive_type %}
-                <p><i class="fas fa-car-side"></i> Привод: {{ car.drive_type.name }}</p>
-            {% endif %}
-            
+
+            <div class="row">
+                <div class="col-6">
+                    <p><i class="fas fa-road text-secondary"></i> <strong>Пробег:</strong> {{ car.mileage|floatformat:0 }} км</p>
+                </div>
+                <div class="col-6">
+                    <p><i class="fas fa-map-marker-alt text-secondary"></i> <strong>Город:</strong> {{ car.city }}</p>
+                </div>
+            </div>
+
+            <div class="row">
+                {% if car.engine_volume %}
+                    <div class="col-6">
+                        <p><i class="fas fa-gas-pump text-secondary"></i> <strong>Объём:</strong> {{ car.engine_volume }} л</p>
+                    </div>
+                {% endif %}
+                {% if car.horsepower %}
+                    <div class="col-6">
+                        <p><i class="fas fa-gauge-high text-secondary"></i> <strong>Мощность:</strong> {{ car.horsepower }} л.с.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                {% if car.transmission %}
+                    <div class="col-6">
+                        <p><i class="fas fa-cog text-secondary"></i> <strong>КПП:</strong> {{ car.transmission.name }}</p>
+                    </div>
+                {% endif %}
+                {% if car.drive_type %}
+                    <div class="col-6">
+                        <p><i class="fas fa-car-side text-secondary"></i> <strong>Привод:</strong> {{ car.drive_type.name }}</p>
+                    </div>
+                {% endif %}
+            </div>
+
             {% if car.color %}
-                <p><i class="fas fa-palette"></i> Цвет: {{ car.color }}</p>
+                <p><i class="fas fa-palette text-secondary"></i> <strong>Цвет:</strong> {{ car.color }}</p>
             {% endif %}
-            
+
             <hr>
-            
+
             <h5>Описание</h5>
             <p class="text-muted">{{ car.description }}</p>
-            
+
             <hr>
-            
-            <div class="d-flex gap-2">
+
+            <div class="d-flex gap-3">
                 <span class="badge bg-secondary">👁️ {{ car.views_count }}</span>
-                <span class="badge bg-danger">❤️ {{ car.favorites_count }}</span>
+                <span class="badge bg-dark">
+                    <i class="fas fa-star"></i> {{ car.favorites_count }}
+                </span>
             </div>
-            
+
             {% if user.is_authenticated and car.user == user %}
                 <hr>
                 <div class="d-flex gap-2">
-                    <a href="#" class="btn btn-primary">Редактировать</a>
-                    <a href="#" class="btn btn-danger">Удалить</a>
+                    <a href="#" class="btn btn-dark">
+                        <i class="fas fa-edit"></i> Редактировать
+                    </a>
+                    <a href="#" class="btn btn-outline-danger" onclick="return confirm('Удалить объявление?')">
+                        <i class="fas fa-trash-alt"></i> Удалить
+                    </a>
                 </div>
             {% endif %}
+
+            <hr>
+            <p class="text-muted small">
+                <i class="fas fa-user"></i> Продавец: {{ car.user.full_name|default:car.user.username }}
+            </p>
         </div>
     </div>
 </div>

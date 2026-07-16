@@ -60,22 +60,29 @@
             <div class="row">
                 {% for car in cars|slice:":6" %}
                     <div class="col-md-4 mb-3">
-                        <div class="card h-100 shadow-sm">
+                        <div class="card h-100 shadow-sm border-0">
                             {% if car.images.first %}
                                 <img src="{{ car.images.first.image.url }}" class="card-img-top" alt="{{ car.brand.name }} {{ car.model.name }}" style="height: 160px; object-fit: cover;">
                             {% else %}
-                                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 160px;">
-                                    <i class="fas fa-car fa-2x text-white"></i>
+                                <div class="card-img-top bg-dark d-flex align-items-center justify-content-center" style="height: 160px;">
+                                    <i class="fas fa-car fa-2x text-secondary"></i>
                                 </div>
                             {% endif %}
                             <div class="card-body">
-                                <h6 class="card-title">{{ car.brand.name }} {{ car.model.name }}</h6>
-                                <p class="text-primary fw-bold">{{ car.price|floatformat:0 }} ₽</p>
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="card-title fw-bold">{{ car.brand.name }} {{ car.model.name }}</h6>
+                                    {% if user.is_authenticated %}
+                                        <a href="{% url 'favorites_add' car.id %}" class="btn btn-outline-secondary btn-sm" style="border: none; padding: 0 4px;" title="Добавить в избранное">
+                                            <i class="far fa-star"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                <p class="text-success fw-bold">{{ car.price|floatformat:0 }} ₽</p>
                                 <p class="text-muted small">
                                     <i class="fas fa-calendar"></i> {{ car.year }} &middot;
                                     <i class="fas fa-road"></i> {{ car.mileage|floatformat:0 }} км
                                 </p>
-                                <a href="{% url 'car_detail' car.pk %}" class="btn btn-primary btn-sm w-100">Подробнее</a>
+                                <a href="{% url 'car_detail' car.pk %}" class="btn btn-dark btn-sm w-100">Подробнее</a>
                             </div>
                         </div>
                     </div>
