@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'moderation.apps.ModerationConfig',
+    'pages.apps.PagesConfig',
     # 'django.contrib.postgres',  # Для полнотекстового поиска
 
     # Временно комментируем всё, что добавили

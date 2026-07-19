@@ -8,6 +8,7 @@ from cars.views import car_list, car_detail, car_create
 from accounts.views import login_view, logout_view, register_view, profile_view
 from favorites.views import favorites_list, favorites_add, favorites_remove
 from moderation.views import moderation_list, moderation_approve, moderation_reject
+from pages.views import about_view, contacts_view, help_view
 
 urlpatterns = [
     path('', car_list, name='home'),
@@ -56,6 +57,11 @@ urlpatterns = [
              template_name='accounts/password_reset_complete.html'
          ),
          name='password_reset_complete'),
+
+    # Дополнительные страницы
+    path('about/', about_view, name='about'),
+    path('contacts/', contacts_view, name='contacts'),
+    path('help/', help_view, name='help'),
 ]
 
 if settings.DEBUG:
