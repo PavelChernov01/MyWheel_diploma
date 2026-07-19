@@ -3,6 +3,9 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
 
 from cars.views import car_list, car_detail, car_create
 from accounts.views import login_view, logout_view, register_view, profile_view
@@ -10,11 +13,29 @@ from favorites.views import favorites_list, favorites_add, favorites_remove
 from moderation.views import moderation_list, moderation_approve, moderation_reject
 from pages.views import about_view, contacts_view, help_view
 
+# Swagger схема
+schema_view = get_schema_view(
+    openapi.Info(
+        title="MyWheel API",
+        default_version='v1',
+        description="API для платформы по продаже автомобилей с пробегом",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="support@mywheel.com"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
+)
+
 urlpatterns = [
     path('', car_list, name='home'),
     path('admin/', admin.site.urls),
     path('api/v1/', include('api.urls')),
     path('reviews/', include('reviews.urls')),
+
+    # Swagger документация
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
     # Модерация (прямые маршруты)
     path('moderation/', moderation_list, name='moderation_list'),

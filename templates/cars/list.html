@@ -4,6 +4,7 @@
 {% block title %}MyWheel — Автомобили с пробегом{% endblock %}
 
 {% block content %}
+
 <!-- HERO БЛОК -->
 <section class="hero-section text-white text-center py-5" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);">
     <div class="container py-4">
@@ -48,7 +49,7 @@
 <section class="py-4">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold mb-0">🚗 Свежие объявления</h4>
+            <h4 class="fw-bold mb-0">🚗 Все объявления</h4>
             {% if user.is_authenticated %}
                 <a href="{% url 'car_create' %}" class="btn btn-success btn-sm">
                     <i class="fas fa-plus-circle"></i> Добавить
@@ -58,7 +59,7 @@
 
         {% if cars %}
             <div class="row">
-                {% for car in cars|slice:":6" %}
+                {% for car in cars %}
                     <div class="col-md-4 mb-3">
                         <div class="card h-100 shadow-sm border-0">
                             {% if car.images.first %}
@@ -88,6 +89,46 @@
                     </div>
                 {% endfor %}
             </div>
+
+            <!-- ПАГИНАЦИЯ -->
+            {% if cars.has_other_pages %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if cars.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ cars.previous_page_number }}">&laquo;</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&laquo;</span>
+                            </li>
+                        {% endif %}
+
+                        {% for page_num in cars.paginator.page_range %}
+                            {% if cars.number == page_num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% elif page_num > cars.number|add:'-3' and page_num < cars.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if cars.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ cars.next_page_number }}">&raquo;</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&raquo;</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+
         {% else %}
             <div class="text-center py-4">
                 <i class="fas fa-car fa-3x text-muted mb-2"></i>

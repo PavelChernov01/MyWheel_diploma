@@ -1,9 +1,104 @@
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db import transaction
+from django.core.paginator import Paginator
+from django.contrib.auth import get_user_model
 from django.http import Http404
+
+from .models import CarListing, CarImage
+from .serializers import (
+    CarListingSerializer, CarListingDetailSerializer,
+    CarListingCreateSerializer
+)
+from .filters import CarListingFilter
+from .forms import CarListingForm, MultipleCarImageForm
 from reviews.models import Review
+from brands.models import Brand
+
+
+# ============ API Views ============
+
+class CarListingListView(generics.ListAPIView):
+    """Список объявлений с фильтрацией и поиском"""
+    serializer_class = CarListingSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = CarListingFilter
+    search_fields = ['description', 'brand__name', 'model__name', 'city']
+    ordering_fields = ['price', 'year', 'created_at', 'views_count']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        return CarListing.objects.filter(status='active').select_related('brand', 'model', 'user')
+
+
+class CarListingDetailView(generics.RetrieveAPIView):
+    """Детальный просмотр объявления"""
+    serializer_class = CarListingDetailSerializer
+    queryset = CarListing.objects.filter(status='active')
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.views_count += 1
+        instance.save(update_fields=['views_count'])
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class CarListingCreateView(generics.CreateAPIView):
+    """Создание объявления"""
+    serializer_class = CarListingCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class CarListingUpdateView(generics.UpdateAPIView):
+    """Обновление объявления"""
+    serializer_class = CarListingCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return CarListing.objects.filter(user=self.request.user)
+
+
+class CarListingDeleteView(generics.DestroyAPIView):
+    """Удаление объявления"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return CarListing.objects.filter(user=self.request.user)
+
+
+# ============ HTML Views (фронтенд) ============
+
+def car_list(request):
+    """Главная страница со списком объявлений"""
+    cars_list = CarListing.objects.filter(status='active').order_by('-created_at')
+
+    # Пагинация (9 объявлений на страницу)
+    paginator = Paginator(cars_list, 9)
+    page_number = request.GET.get('page')
+    cars = paginator.get_page(page_number)  #
+
+    context = {
+        'cars': cars,  #
+        'cars_count': CarListing.objects.filter(status='active').count(),
+        'brands_count': Brand.objects.count(),
+        'cities_count': CarListing.objects.filter(status='active').values('city').distinct().count(),
+        'users_count': get_user_model().objects.count(),
+    }
+    return render(request, 'cars/list.html', context)
+
 
 def car_detail(request, pk):
     """Детальная страница объявления"""
-    # Показываем объявление, если оно активно ИЛИ если пользователь является владельцем
     car = get_object_or_404(CarListing, pk=pk)
 
     # Если объявление не активно и пользователь не владелец — 404
@@ -25,3 +120,41 @@ def car_detail(request, pk):
         'user_review': user_review,
     }
     return render(request, 'cars/detail.html', context)
+
+
+@login_required
+def car_create(request):
+    """Создание объявления"""
+    if request.method == 'POST':
+        form = CarListingForm(request.POST)
+        image_form = MultipleCarImageForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            with transaction.atomic():
+                car = form.save(commit=False)
+                car.user = request.user
+                car.status = 'moderation'
+                car.save()
+
+                # Обработка изображений
+                images = request.FILES.getlist('images')
+                for i, image in enumerate(images):
+                    CarImage.objects.create(
+                        listing=car,
+                        image=image,
+                        is_main=(i == 0),
+                        order=i
+                    )
+
+            messages.success(request, 'Объявление создано и отправлено на модерацию!')
+            return redirect('car_detail', pk=car.pk)
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме')
+    else:
+        form = CarListingForm()
+        image_form = MultipleCarImageForm()
+
+    return render(request, 'cars/create.html', {
+        'form': form,
+        'image_form': image_form,
+    })

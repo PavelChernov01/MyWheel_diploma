@@ -7,6 +7,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
+from django.contrib.auth import get_user_model
 
 from .models import CarListing, CarImage
 from .serializers import (
@@ -15,7 +16,8 @@ from .serializers import (
 )
 from .filters import CarListingFilter
 from .forms import CarListingForm, MultipleCarImageForm
-from reviews.models import Review  # Добавлено
+from reviews.models import Review
+from brands.models import Brand
 
 
 # ============ API Views ============
@@ -77,7 +79,16 @@ class CarListingDeleteView(generics.DestroyAPIView):
 def car_list(request):
     """Главная страница со списком объявлений"""
     cars = CarListing.objects.filter(status='active').order_by('-created_at')
-    return render(request, 'cars/list.html', {'cars': cars})
+
+    # Статистика
+    context = {
+        'cars': cars,
+        'cars_count': CarListing.objects.filter(status='active').count(),
+        'brands_count': Brand.objects.count(),
+        'cities_count': CarListing.objects.filter(status='active').values('city').distinct().count(),
+        'users_count': get_user_model().objects.count(),
+    }
+    return render(request, 'cars/list.html', context)
 
 
 def car_detail(request, pk):
