@@ -15,6 +15,7 @@ from .serializers import (
 )
 from .filters import CarListingFilter
 from .forms import CarListingForm, MultipleCarImageForm
+from reviews.models import Review  # Добавлено
 
 
 # ============ API Views ============
@@ -84,7 +85,19 @@ def car_detail(request, pk):
     car = get_object_or_404(CarListing, pk=pk, status='active')
     car.views_count += 1
     car.save(update_fields=['views_count'])
-    return render(request, 'cars/detail.html', {'car': car})
+
+    # Отзывы
+    reviews = Review.objects.filter(listing=car, is_moderated=True).order_by('-created_at')
+    user_review = None
+    if request.user.is_authenticated:
+        user_review = Review.objects.filter(listing=car, reviewer=request.user).first()
+
+    context = {
+        'car': car,
+        'reviews': reviews,
+        'user_review': user_review,
+    }
+    return render(request, 'cars/detail.html', context)
 
 
 @login_required

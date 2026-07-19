@@ -11,6 +11,7 @@ urlpatterns = [
     path('', car_list, name='home'),
     path('admin/', admin.site.urls),
     path('api/v1/', include('api.urls')),
+    path('reviews/', include('reviews.urls')),  # Должно быть
 
     # Страницы сайта
     path('car/<int:pk>/', car_detail, name='car_detail'),
