@@ -6,12 +6,18 @@ from django.conf.urls.static import static
 from cars.views import car_list, car_detail, car_create
 from accounts.views import login_view, logout_view, register_view, profile_view
 from favorites.views import favorites_list, favorites_add, favorites_remove
+from moderation.views import moderation_list, moderation_approve, moderation_reject
 
 urlpatterns = [
     path('', car_list, name='home'),
     path('admin/', admin.site.urls),
     path('api/v1/', include('api.urls')),
-    path('reviews/', include('reviews.urls')),  # Должно быть
+    path('reviews/', include('reviews.urls')),
+
+    # Модерация (прямые маршруты)
+    path('moderation/', moderation_list, name='moderation_list'),
+    path('moderation/approve/<int:pk>/', moderation_approve, name='moderation_approve'),
+    path('moderation/reject/<int:pk>/', moderation_reject, name='moderation_reject'),
 
     # Страницы сайта
     path('car/<int:pk>/', car_detail, name='car_detail'),
