@@ -8,6 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from django.core.paginator import Paginator
+from django.core.cache import cache
 
 from .models import CarListing, CarImage
 from .serializers import (
@@ -78,22 +80,65 @@ class CarListingDeleteView(generics.DestroyAPIView):
 
 def car_list(request):
     """Главная страница со списком объявлений"""
-    cars = CarListing.objects.filter(status='active').order_by('-created_at')
 
-    # Статистика
+    page_number = request.GET.get('page', 1)
+
+    # ============ КЕШИРОВАНИЕ СПИСКА ОБЪЯВЛЕНИЙ ============
+    cache_key_cars = f'car_list_page_{page_number}'
+    cars = cache.get(cache_key_cars)
+
+    if cars is None:
+        cars_list = CarListing.objects.filter(status='active').order_by('-created_at')
+        paginator = Paginator(cars_list, 9)
+        cars = paginator.get_page(page_number)
+        cache.set(cache_key_cars, cars, 300)  # 5 минут
+        print(f"💰 Объявления (страница {page_number}) сохранены в кеш")
+    else:
+        print(f"💰 Объявления (страница {page_number}) загружены из кеша")
+
+    # ============ КЕШИРОВАНИЕ СТАТИСТИКИ ============
+    stats = cache.get('homepage_stats')
+
+    if stats is None:
+        stats = {
+            'cars_count': CarListing.objects.filter(status='active').count(),
+            'brands_count': Brand.objects.count(),
+            'cities_count': CarListing.objects.filter(status='active').values('city').distinct().count(),
+            'users_count': get_user_model().objects.count(),
+        }
+        cache.set('homepage_stats', stats, 3600)  # 1 час
+        print("💰 Статистика сохранена в кеш")
+    else:
+        print("💰 Статистика загружена из кеша")
+
     context = {
         'cars': cars,
-        'cars_count': CarListing.objects.filter(status='active').count(),
-        'brands_count': Brand.objects.count(),
-        'cities_count': CarListing.objects.filter(status='active').values('city').distinct().count(),
-        'users_count': get_user_model().objects.count(),
+        'cars_count': stats['cars_count'],
+        'brands_count': stats['brands_count'],
+        'cities_count': stats['cities_count'],
+        'users_count': stats['users_count'],
     }
     return render(request, 'cars/list.html', context)
 
 
 def car_detail(request, pk):
     """Детальная страница объявления"""
-    car = get_object_or_404(CarListing, pk=pk, status='active')
+
+    # ============ КЕШИРОВАНИЕ ДЕТАЛЬНОЙ СТРАНИЦЫ ============
+    cache_key = f'car_detail_{pk}'
+    car = cache.get(cache_key)
+
+    if car is None:
+        car = get_object_or_404(CarListing, pk=pk)
+        cache.set(cache_key, car, 3600)  # 1 час
+        print(f"💰 Детальная страница авто {pk} сохранена в кеш")
+    else:
+        print(f"💰 Детальная страница авто {pk} загружена из кеша")
+
+    if car.status != 'active' and car.user != request.user:
+        from django.http import Http404
+        raise Http404("Объявление не найдено")
+
     car.views_count += 1
     car.save(update_fields=['views_count'])
 
