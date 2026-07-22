@@ -1,5 +1,6 @@
 from django import forms
 from .models import CarListing, CarImage
+import re
 
 
 # ============ КАСТОМНЫЙ ВИДЖЕТ ДЛЯ МНОЖЕСТВЕННОЙ ЗАГРУЗКИ ============
@@ -101,6 +102,118 @@ class CarListingForm(forms.ModelForm):
                 field.widget.attrs['class'] = 'form-control'
             if field_name in ['brand', 'model', 'body_type', 'engine_type', 'transmission', 'drive_type']:
                 field.empty_label = 'Выберите...'
+
+    # ============ ВАЛИДАЦИЯ ============
+
+    def clean_year(self):
+        """Проверка года выпуска (1900-2026)"""
+        year = self.cleaned_data.get('year')
+        current_year = 2026
+
+        if year:
+            try:
+                year = int(year)
+                if year < 1900:
+                    raise forms.ValidationError('Год выпуска не может быть раньше 1900')
+                if year > current_year:
+                    raise forms.ValidationError(f'Год выпуска не может быть позже {current_year}')
+            except (ValueError, TypeError):
+                raise forms.ValidationError('Введите корректный год')
+        return year
+
+    def clean_price(self):
+        """Проверка цены (не отрицательная, не слишком большая)"""
+        price = self.cleaned_data.get('price')
+
+        if price is not None and price != '':
+            try:
+                price = float(price)
+                if price < 0:
+                    raise forms.ValidationError('Цена не может быть отрицательной')
+                if price > 100000000:
+                    raise forms.ValidationError('Цена не может превышать 100 000 000 ₽')
+            except (ValueError, TypeError):
+                raise forms.ValidationError('Введите корректную цену')
+        return price
+
+    def clean_mileage(self):
+        """Проверка пробега (не отрицательный, не слишком большой)"""
+        mileage = self.cleaned_data.get('mileage')
+
+        if mileage is not None and mileage != '':
+            try:
+                mileage = int(mileage)
+                if mileage < 0:
+                    raise forms.ValidationError('Пробег не может быть отрицательным')
+                if mileage > 1000000:
+                    raise forms.ValidationError('Пробег не может превышать 1 000 000 км')
+            except (ValueError, TypeError):
+                raise forms.ValidationError('Введите корректный пробег')
+        return mileage
+
+    def clean_engine_volume(self):
+        """Проверка объёма двигателя"""
+        engine_volume = self.cleaned_data.get('engine_volume')
+
+        if engine_volume:
+            try:
+                engine_volume = float(engine_volume)
+                if engine_volume < 0:
+                    raise forms.ValidationError('Объём двигателя не может быть отрицательным')
+                if engine_volume > 20:
+                    raise forms.ValidationError('Объём двигателя не может превышать 20 л')
+            except (ValueError, TypeError):
+                # Если это выбор из списка (строка) — пропускаем проверку
+                pass
+        return engine_volume
+
+    def clean_horsepower(self):
+        """Проверка мощности"""
+        horsepower = self.cleaned_data.get('horsepower')
+
+        if horsepower:
+            try:
+                horsepower = int(horsepower)
+                if horsepower < 0:
+                    raise forms.ValidationError('Мощность не может быть отрицательной')
+                if horsepower > 2000:
+                    raise forms.ValidationError('Мощность не может превышать 2000 л.с.')
+            except (ValueError, TypeError):
+                # Если это выбор из списка (строка) — пропускаем проверку
+                pass
+        return horsepower
+
+    def clean_vin(self):
+        """Проверка VIN-кода (17 символов, только латиница и цифры)"""
+        vin = self.cleaned_data.get('vin')
+
+        if vin:
+            vin = vin.upper().strip()
+            if len(vin) != 17:
+                raise forms.ValidationError('VIN-код должен содержать ровно 17 символов')
+            if any(char in vin for char in ['I', 'O', 'Q']):
+                raise forms.ValidationError('VIN-код не должен содержать буквы I, O, Q')
+            if not re.match(r'^[A-HJ-NPR-Z0-9]{17}$', vin):
+                raise forms.ValidationError('VIN-код должен содержать только латинские буквы и цифры')
+        return vin
+
+    def clean(self):
+        """Общая проверка формы (комбинация полей)"""
+        cleaned_data = super().clean()
+        year = cleaned_data.get('year')
+        price = cleaned_data.get('price')
+
+        # Если цена слишком низкая для нового автомобиля
+        if year and price:
+            try:
+                year = int(year)
+                price = float(price)
+                if year >= 2020 and price < 50000:
+                    raise forms.ValidationError('Цена слишком низкая для автомобиля такого года выпуска')
+            except (ValueError, TypeError):
+                pass
+
+        return cleaned_data
 
 
 class CarImageForm(forms.ModelForm):
