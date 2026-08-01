@@ -1,0 +1,37 @@
+{% extends 'base/base.html' %}
+
+{% block title %}О нас{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="fw-bold mb-4">О проекте MyWheel</h1>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <p class="lead">
+                MyWheel — это современная платформа для поиска и продажи автомобилей с пробегом.
+            </p>
+            <p>
+                Мы создаём безопасное и удобное пространство для честных сделок между продавцами и покупателями.
+            </p>
+            <h5 class="mt-4">Наша миссия</h5>
+            <p>Сделать рынок подержанных автомобилей прозрачным и надёжным.</p>
+
+            <h5 class="mt-3">Для кого</h5>
+            <ul>
+                <li><strong>Для покупателей:</strong> удобный поиск, фильтры, детальная информация об авто</li>
+                <li><strong>Для продавцов:</strong> простое создание объявлений, управление, модерация</li>
+            </ul>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-car fa-4x text-primary mb-3"></i>
+                    <h5>MyWheel</h5>
+                    <p class="text-muted">© 2026 Все права защищены</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

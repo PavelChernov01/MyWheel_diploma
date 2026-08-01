@@ -1,0 +1,22 @@
+[
+  {"model": "brands.bodytype", "pk": 1, "fields": {"name": "Седан", "code": "sedan", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.bodytype", "pk": 2, "fields": {"name": "Хэтчбек", "code": "hatchback", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.bodytype", "pk": 3, "fields": {"name": "Внедорожник", "code": "suv", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.bodytype", "pk": 4, "fields": {"name": "Кроссовер", "code": "crossover", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.bodytype", "pk": 5, "fields": {"name": "Универсал", "code": "wagon", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.bodytype", "pk": 6, "fields": {"name": "Купе", "code": "coupe", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+
+  {"model": "brands.enginetype", "pk": 1, "fields": {"name": "Бензиновый", "code": "petrol", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.enginetype", "pk": 2, "fields": {"name": "Дизельный", "code": "diesel", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.enginetype", "pk": 3, "fields": {"name": "Электрический", "code": "electric", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.enginetype", "pk": 4, "fields": {"name": "Гибрид", "code": "hybrid", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+
+  {"model": "brands.transmissiontype", "pk": 1, "fields": {"name": "Механическая", "code": "manual", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.transmissiontype", "pk": 2, "fields": {"name": "Автоматическая", "code": "automatic", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.transmissiontype", "pk": 3, "fields": {"name": "Роботизированная", "code": "robot", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.transmissiontype", "pk": 4, "fields": {"name": "Вариатор", "code": "cvt", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+
+  {"model": "brands.drivetype", "pk": 1, "fields": {"name": "Передний", "code": "fwd", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.drivetype", "pk": 2, "fields": {"name": "Задний", "code": "rwd", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}},
+  {"model": "brands.drivetype", "pk": 3, "fields": {"name": "Полный", "code": "awd", "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}}
+]

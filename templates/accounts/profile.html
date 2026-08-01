@@ -1,0 +1,114 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Мой профиль{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Левая колонка: информация о пользователе -->
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="Avatar" class="rounded-circle img-fluid mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+                            <i class="fas fa-user fa-4x text-white"></i>
+                        </div>
+                    {% endif %}
+                    <h4>{{ user.first_name }} {{ user.last_name }}</h4>
+                    <p class="text-muted">@{{ user.username }}</p>
+                    <p class="text-muted small">{{ user.email }}</p>
+                    
+                    <hr>
+                    <div class="row">
+                        <div class="col-6">
+                            <h5>{{ total_listings }}</h5>
+                            <p class="text-muted small">Объявлений</p>
+                        </div>
+                        <div class="col-6">
+                            <h5>{{ active_listings }}</h5>
+                            <p class="text-muted small">Активных</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Правая колонка: редактирование профиля -->
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Редактировать профиль</h5>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Имя</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Фамилия</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Телефон</label>
+                                {{ form.phone }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Город</label>
+                                {{ form.city }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Аватар</label>
+                            {{ form.avatar }}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Сохранить
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Мои объявления -->
+            <div class="card shadow mt-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Мои объявления</h5>
+                    
+                    {% if user_cars %}
+                        <div class="list-group">
+                            {% for car in user_cars %}
+                                <a href="{% url 'car_detail' car.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ car.brand.name }} {{ car.model.name }}</strong>
+                                        <span class="badge bg-secondary ms-2">{{ car.year }}</span>
+                                        <span class="text-muted ms-2">{{ car.price|floatformat:0 }} ₽</span>
+                                    </div>
+                                    <span class="badge {% if car.status == 'active' %}bg-success{% elif car.status == 'sold' %}bg-secondary{% elif car.status == 'moderation' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ car.get_status_display }}
+                                    </span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">У вас пока нет объявлений.</p>
+                        <div class="text-center">
+                            <a href="{% url 'car_create' %}" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus-circle"></i> Создать объявление
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Оставить отзыв{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 600px;">
+    <div class="card shadow">
+        <div class="card-body p-4">
+            <h4 class="card-title mb-3">
+                <i class="fas fa-star text-warning"></i> Оставить отзыв
+            </h4>
+            <p class="text-muted mb-3">
+                Объявление: <strong>{{ listing.brand.name }} {{ listing.model.name }}</strong>
+            </p>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label">Оценка (1–5)</label>
+                    <select name="rating" class="form-select" required>
+                        <option value="">Выберите оценку...</option>
+                        <option value="5">⭐⭐⭐⭐⭐ Отлично</option>
+                        <option value="4">⭐⭐⭐⭐ Хорошо</option>
+                        <option value="3">⭐⭐⭐ Средне</option>
+                        <option value="2">⭐⭐ Плохо</option>
+                        <option value="1">⭐ Очень плохо</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Комментарий</label>
+                    <textarea name="comment" class="form-control" rows="4" placeholder="Расскажите о вашем опыте..." required></textarea>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Отправить
+                    </button>
+                    <a href="{% url 'car_detail' listing.pk %}" class="btn btn-secondary">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

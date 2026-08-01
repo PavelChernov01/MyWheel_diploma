@@ -1,0 +1,143 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}MyWheel — Автомобили с пробегом{% endblock %}
+
+{% block content %}
+
+<!-- HERO БЛОК -->
+<section class="hero-section text-white text-center py-5" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);">
+    <div class="container py-4">
+        <h1 class="display-4 fw-bold mb-3">
+            <i class="fas fa-car"></i> MyWheel
+        </h1>
+        <p class="lead mb-3" style="font-size: 1.3rem;">
+            Автомобили с пробегом — честно, просто, надёжно
+        </p>
+        <p style="max-width: 600px; margin: 0 auto;">
+            Платформа для поиска и продажи подержанных автомобилей.<br>
+            Прозрачные условия, реальные отзывы, проверенные продавцы.
+        </p>
+    </div>
+</section>
+
+<!-- СТАТИСТИКА -->
+<section class="py-3 bg-white border-bottom">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-4 col-md-3">
+                <h4 class="fw-bold text-primary">{{ cars_count|default:"0" }}</h4>
+                <p class="text-muted small">Объявлений</p>
+            </div>
+            <div class="col-4 col-md-3">
+                <h4 class="fw-bold text-primary">{{ brands_count|default:"0" }}</h4>
+                <p class="text-muted small">Марок</p>
+            </div>
+            <div class="col-4 col-md-3">
+                <h4 class="fw-bold text-primary">{{ cities_count|default:"0" }}</h4>
+                <p class="text-muted small">Городов</p>
+            </div>
+            <div class="col-4 col-md-3">
+                <h4 class="fw-bold text-primary">{{ users_count|default:"0" }}</h4>
+                <p class="text-muted small">Пользователей</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- КАТАЛОГ АВТОМОБИЛЕЙ -->
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold mb-0">🚗 Все объявления</h4>
+            {% if user.is_authenticated %}
+                <a href="{% url 'car_create' %}" class="btn btn-success btn-sm">
+                    <i class="fas fa-plus-circle"></i> Добавить
+                </a>
+            {% endif %}
+        </div>
+
+        {% if cars %}
+            <div class="row">
+                {% for car in cars %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 shadow-sm border-0">
+                            {% if car.images.first %}
+                                <img src="{{ car.images.first.image.url }}" class="card-img-top" alt="{{ car.brand.name }} {{ car.model.name }}" style="height: 160px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-dark d-flex align-items-center justify-content-center" style="height: 160px;">
+                                    <i class="fas fa-car fa-2x text-secondary"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="card-title fw-bold">{{ car.brand.name }} {{ car.model.name }}</h6>
+                                    {% if user.is_authenticated %}
+                                        <a href="{% url 'favorites_add' car.id %}" class="btn btn-outline-secondary btn-sm" style="border: none; padding: 0 4px;" title="Добавить в избранное">
+                                            <i class="far fa-star"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                <p class="text-success fw-bold">{{ car.price|floatformat:0 }} ₽</p>
+                                <p class="text-muted small">
+                                    <i class="fas fa-calendar"></i> {{ car.year }} &middot;
+                                    <i class="fas fa-road"></i> {{ car.mileage|floatformat:0 }} км
+                                </p>
+                                <a href="{% url 'car_detail' car.pk %}" class="btn btn-dark btn-sm w-100">Подробнее</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- ПАГИНАЦИЯ -->
+            {% if cars.has_other_pages %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if cars.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ cars.previous_page_number }}">&laquo;</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&laquo;</span>
+                            </li>
+                        {% endif %}
+
+                        {% for page_num in cars.paginator.page_range %}
+                            {% if cars.number == page_num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% elif page_num > cars.number|add:'-3' and page_num < cars.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if cars.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ cars.next_page_number }}">&raquo;</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&raquo;</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-car fa-3x text-muted mb-2"></i>
+                <p>Объявлений пока нет. Будьте первым!</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'car_create' %}" class="btn btn-success btn-sm">Добавить объявление</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
